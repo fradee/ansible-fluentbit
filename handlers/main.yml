@@ -1,0 +1,6 @@
+---
+- name: "start/restart service"
+  service:
+    name: td-agent-bit
+    state: restarted
+  listen: restart-fluent-bit

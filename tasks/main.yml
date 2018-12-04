@@ -1,0 +1,30 @@
+---
+- include_tasks: yum.yml
+  when: ansible_os_family == 'RedHat'
+
+- include_tasks: apt.yml
+  when: ansible_os_family == 'Debian'
+
+- name: "install"
+  package:
+    name: td-agent-bit
+    state: latest
+
+- name: "enable service td-agent-bit"
+  service:
+    name: "td-agent-bit"
+    state: "started"
+    enabled: "yes"
+
+- name: "place configuration file"
+  template:
+    src: "td-agent-bit.conf.j2"
+    dest: "{{ fluentbit_main_configuration }}"
+
+- name: "place parsers file"
+  template:
+    src: "parsers.conf.j2"
+    dest: "/etc/td-agent-bit/parsers.conf"
+  notify:
+    - restart-fluent-bit
+
