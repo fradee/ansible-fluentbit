@@ -4,3 +4,15 @@
     name: td-agent-bit
     state: restarted
   listen: restart-fluent-bit
+
+- name: "restart rsyslog"
+  service:
+    name: rsyslog
+    state: restarted
+  listen: restart-rsyslog-fluent-bit
+
+- name: "restart journald"
+  service:
+    name: systemd-journald
+    state: restarted
+  listen: restart-journald-fluent-bit

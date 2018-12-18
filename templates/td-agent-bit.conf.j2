@@ -1,7 +1,7 @@
 # {{ ansible_managed }}
 {% if fluentbit_config_service_params is defined %}
 [SERVICE]
-    Parsers_File: 'parsers.conf'
+    Parsers_File /etc/td-agent-bit/parsers.conf
 {% for service_key in fluentbit_config_service_params %}
     {{ service_key }}  {{ fluentbit_config_service_params[service_key] }}
 {% endfor %}

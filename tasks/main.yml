@@ -10,21 +10,42 @@
     name: td-agent-bit
     state: latest
 
-- name: "enable service td-agent-bit"
-  service:
-    name: "td-agent-bit"
-    state: "started"
-    enabled: "yes"
-
-- name: "place configuration file"
+- name: "create config rsyslog - Unix socket mode over UDP"
   template:
-    src: "td-agent-bit.conf.j2"
-    dest: "{{ fluentbit_main_configuration }}"
+    src: 60-fluent-bit.conf.j2
+    dest: /etc/rsyslog.d/60-fluent-bit.conf
+
+- name: "restart rsyslog"
+  service:
+    name: rsyslog
+    state: restarted
+
+
+- name: "journald to forward logs to rsyslog"
+  lineinfile:
+    dest: /etc/systemd/journald.conf
+    regexp: "^.ForwardToSyslog=[yes|no]"
+    line: "ForwardToSyslog=yes"
+    state: present
+  notify: restart-journald-fluent-bit
 
 - name: "place parsers file"
   template:
     src: "parsers.conf.j2"
     dest: "/etc/td-agent-bit/parsers.conf"
-  notify:
-    - restart-fluent-bit
 
+- name: "place FluentBit configuration file"
+  template:
+    src: "td-agent-bit.conf.j2"
+    dest: "{{ fluentbit_main_configuration }}"
+
+- name: "enable service td-agent-bit"
+  service:
+    name: "td-agent-bit"
+    state: "restarted"
+    enabled: "yes"
+
+- name: "set permissions for Syslog Unix socket"
+  file:
+    path: /tmp/fluent-bit.sock
+    mode: 0666
