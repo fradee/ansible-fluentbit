@@ -1,0 +1,4 @@
+# {{ ansible_managed }}
+$ModLoad omuxsock
+$OMUxSockSocket /tmp/fluent-bit.sock
+*.* :omuxsock:

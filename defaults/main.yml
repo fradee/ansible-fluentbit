@@ -3,9 +3,9 @@ fluentbit_main_configuration: /etc/td-agent-bit/td-agent-bit.conf
 
 fluentbit_config_service_params:
   Flush: '5'
-  Daemon: 'On'
-  Log_Level: 'debug'
-#  Log_Level: 'info'
+  Daemon: 'Off'
+  Log_Level: 'info'
+#  Log_Level: 'debug' # 'trace'
 #  Log_File: '/var/log/td-agent-bit.log'
 #  Plugins_File: 'plugins.conf'
 #  HTTP_Server: 'on'
@@ -21,15 +21,31 @@ fluentbit_custom_parser_configurations: []
 #    Time_Format: '%b %d %H:%M:%S'
 #    Time_Format: '%Y-%m-%dT%H:%M:%S.%L'
 #    Time_Keep: 'On'
+#  - Name: jenkins_FirstLine
+#    Format: regex
+#    Regex: ^(?<logtime>\w+\s\d+,\s\d+\s\d+:\d+:\d+\s\w+)\s(?<plugin>[\w\.\$]*)\s(?<activity>\w+)$
+#    Time_Key: logtime
+#    Time_Format: "%b %d, %Y %r"
+#  - Name: jenkins_MessageLine
+#    Format: regex
+#    Regex: ^(?<loglevel>{SOME|SEVERE|WARNING|INFO|ERROR}):\s(?<message>[\w+ \/\-\@\.:\(\)\t\$→⇒\&\#;\<\>\'\"\+\={\r\n}*\}‘’\?]*)
 
-fluentbit_input_configurations: []
+
+fluentbit_input_configurations:
 ###### For example
 #  - Name: 'cpu'
 #    Tag: 'cpu_usage'
-#  - Name: 'syslog'
-#    Path: '/tmp/fluent-bit.sock'
-#    Parser: 'syslog-rfc3164' # also available 'syslog-rfc5424'
-#    Mode: 'tcp'
+#  - Name: 'tail'
+#    Path: '/var/log/jenkins/jenkins.log'
+#    Multiline: On
+#    Parser_Firstline: jenkins_FirstLine
+#    Parser_1: jenkins_MessageLine
+#    Tag: 'jenkins'
+  - Name: 'syslog'
+    Path: '/tmp/fluent-bit.sock'
+    Parser: 'syslog-rfc3164' # also available 'syslog-rfc5424'
+    Mode: 'unix_udp' # 'tcp'
+    Tag: 'syslog'
 #    Listen: '0.0.0.0'
 #    Port: 5140
 #    DB: '/etc/td-agent-bit/journald.db'
@@ -37,11 +53,11 @@ fluentbit_input_configurations: []
 
 fluentbit_filter_configurations: []
 ###### For example
-#  - Name: 'grep'
-#    Match: '*'
-#    Regex: 'log aa'
+#  - Name: record_modifier
+#    Match: jenkins
+#    Record: 'host ${HOSTNAME}'
 
-fluentbit_output_configurations: []
+fluentbit_output_configurations:
 ###### For example
 #  - Name: 'forward'
 #    Host: '127.0.0.1'
@@ -50,6 +66,6 @@ fluentbit_output_configurations: []
 #    Time_as_Integer: 'true'
 #  - Name: 'stdout'
 #    Match: '*'
-#  - Name: 'file'
-#    Match: '*'
-#    Path: 'output.txt'
+  - Name: 'file'
+    Match: '*'
+    Path: '/output.txt'
